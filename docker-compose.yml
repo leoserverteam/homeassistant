@@ -1,7 +1,22 @@
 services:
+  hacs-installer:
+    container_name: hacs-installer
+    image: alpine:latest
+    volumes:
+      - ./config:/config
+    entrypoint: ["sh", "-c"]
+    command:
+      - |
+        apk add --no-cache bash curl unzip >/dev/null 2>&1 && \
+        bash -c "$(curl -fsSL https://get.hacs.xyz)"
+    restart: "no"
+
   homeassistant:
     container_name: homeassistant
     image: ghcr.io/home-assistant/home-assistant:stable
+    depends_on:
+      hacs-installer:
+        condition: service_completed_successfully
     volumes:
       - ./config:/config
       - /etc/localtime:/etc/localtime:ro
